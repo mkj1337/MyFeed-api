@@ -4,11 +4,9 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import http from 'http';
-import { v2 as cloudinary } from 'cloudinary';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cloud from './cloud.js';
-
 
 // Routers
 import authRouter from './routes/authRouter.js';
