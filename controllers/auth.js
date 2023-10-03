@@ -81,7 +81,7 @@ export const verify = (req, res) => {
         if (user) {
             const q = `UPDATE users SET verify=1 WHERE username=?;`;
 
-            db.query(q, username, (err, data) => {
+            db.query(q, [username], (err, data) => {
                 if (err) return err;
                 if (data) {
                     res.redirect('/signin?verified=success');
