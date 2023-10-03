@@ -68,18 +68,10 @@ export const signup = (req, res) => {
             dayjs(Date.now()).format("YYYY-MM-DD HH:mm:ss"),
         ];
 
-        db.query(q, [values], (err, data) => {
+        db.query(q, [values], async (err, data) => {
             if (err) return res.status(500).json(err);
 
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    return res.status(403).json({
-                        message: 'Verification email sending failed!'
-                    })
-                } else {
-                    console.log('Message sent: ', info.response);
-                }
-            })
+            await sendEmail(mailOptions);
 
             return res.status(200).json({
                 message: 'User has been created successfully! Verify yout account on email!',
@@ -156,5 +148,17 @@ const markEmailAsVerified = (username) => {
         if (err) return res.status(500).json({ verify: failed });
 
         return res.status(200).json({ verified: success })
+    })
+}
+
+const sendEmail = (options) => {
+    return new Promise((resolve, reject) => {
+        transporter.sendMail(options, (error, info) => {
+            if (error) {
+                reject(err)
+            } else {
+                resolve(info)
+            }
+        })
     })
 }
