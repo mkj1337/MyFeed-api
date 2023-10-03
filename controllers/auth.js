@@ -75,19 +75,20 @@ export const signup = (req, res) => {
 export const verify = (req, res) => {
     const { token } = req.query;
 
-    console.log('from backend verify')
+    console.log(token)
 
-    const user = getUserByVerificationToken(token);
-    console.log(user)
-    if (user) {
-        // Mark the user's email as verified in the database
-        console.log('user exist')
-        markEmailAsVerified(user.email);
-        res.redirect('?verified=success');
-    } else {
-        console.log('user do not exist')
-        res.redirect('?verified=failed');
-    }
+    const q = "SELECT * FROM users WHERE email_verify=?;";
+
+    db.query(q, [token], (err, user) => {
+        if (user) {
+            console.log(user)
+            markEmailAsVerified(user.email);
+            res.redirect('/signin?verified=success');
+        } else {
+            console.log('user do not exist')
+            res.redirect('/signin?verified=failed');
+        };
+    });
 }
 
 export const signin = (req, res) => {
@@ -123,21 +124,6 @@ export const signout = (req, res) => {
     }).status(200).json({ message: 'Signed Out!' });
 };
 
-const getUserByVerificationToken = (token) => {
-    const q = "SELECT * FROM users WHERE email_verify=?;";
-
-    db.query(q, token, (err, data) => {
-        if (data) {
-            // User with the verification token found
-            return data;
-        } else {
-            // User not found, return null or an error
-            return null;
-        };
-    });
-
-
-};
 
 const markEmailAsVerified = (username) => {
     const q = `UPDATE users SET verify=true WHERE username=?;`;
