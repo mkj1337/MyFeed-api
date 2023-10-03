@@ -155,7 +155,7 @@ const sendEmail = (options) => {
     return new Promise((resolve, reject) => {
         transporter.sendMail(options, (error, info) => {
             if (error) {
-                reject(err)
+                reject(error)
             } else {
                 resolve(info)
             }
