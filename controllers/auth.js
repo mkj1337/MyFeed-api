@@ -79,16 +79,13 @@ export const verify = (req, res) => {
 
     db.query(q, [token], async (err, user) => {
         if (user) {
-            const q = `UPDATE users SET verify=1 WHERE username=?;`;
+            try {
+                await markEmailAsVerified(user.email);
+                res.redirect('/signin?verified=success');
 
-            db.query(q, [username], (err, data) => {
-                if (err) return err;
-                if (data) {
-                    res.redirect('/signin?verified=success');
-                } else {
-                    res.redirect('/signin?verified=failed');
-                }
-            })
+            } catch (error) {
+                console.log(error)
+            }
 
         } else {
             console.log('user do not exist')
@@ -129,6 +126,23 @@ export const signout = (req, res) => {
         sameSite: 'none'
     }).status(200).json({ message: 'Signed Out!' });
 };
+
+
+const markEmailAsVerified = (username) => {
+    const q = `UPDATE users SET verify=1 WHERE username=?;`;
+
+    return new Promise((resolve, reject) => {
+
+        db.query(q, [username], (err, data) => {
+            if (err) console.log(err);
+            if (data) {
+                resolve({ verified: 'success' })
+            } else {
+                reject({ verified: 'failed' })
+            }
+        })
+    })
+}
 
 const sendEmail = (options) => {
     const transporter = nodemailer.createTransport({
