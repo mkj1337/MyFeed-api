@@ -78,7 +78,7 @@ export const verify = (req, res) => {
     console.log('from backend verify')
 
     const user = getUserByVerificationToken(token);
-
+    console.log(user)
     if (user) {
         // Mark the user's email as verified in the database
         console.log('user exist')
