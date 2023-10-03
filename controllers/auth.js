@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
+import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 
 export const signup = (req, res) => {
     const { email, name, username, password } = req.body;
@@ -13,6 +15,10 @@ export const signup = (req, res) => {
         });
     };
 
+    const generateVerificationToken = () => {
+        return crypto.randomBytes(32).toString('hex');
+    }
+
     const q = "SELECT * FROM users WHERE username = ?;";
 
     db.query(q, [username], (err, data) => {
@@ -21,11 +27,32 @@ export const signup = (req, res) => {
             message: 'User with this username already exists!',
         });
 
-        const q = "INSERT INTO users(`id`, `username`, `name`, `email`, `password`, `createdAt`) VALUES(?);";
+
+        const q = "INSERT INTO users(`id`, `username`, `name`, `email`, `password`, `email_verify`, `verify`, `createdAt`) VALUES(?);";
 
         if (password.length < 5) return res.status(409).json({
             message: "Too short password!",
         });
+
+        const verificationToken = generateVerificationToken();
+
+        const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+                user: process.env.VERIFY_EMAIL,
+                pass: process.env.VERIFY_EMAIL_PASSWORD
+            }
+        })
+
+        const mailOptions = {
+            from: process.env.VERIFY_EMAIL,
+            to: email,
+            subject: 'MyFeed verify your account!',
+            html: ` 
+            <p>Click the following link to verify your email:</p>
+            <a href="https://devdomain.site/auth/verify?token=${verificationToken}">Verify Email</a>
+            `
+        }
 
         const salt = bcrypt.genSaltSync(10);
         const hashedPass = bcrypt.hashSync(password, salt);
@@ -36,25 +63,51 @@ export const signup = (req, res) => {
             name,
             email,
             hashedPass,
+            verificationToken,
+            false,
             dayjs(Date.now()).format("YYYY-MM-DD HH:mm:ss"),
         ];
 
         db.query(q, [values], (err, data) => {
             if (err) return res.status(500).json(err);
 
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    return res.status(403).json({
+                        message: 'Verification email sending failed!'
+                    })
+                } else {
+                    console.log('Message sent: ', info.response);
+                }
+            })
+
             return res.status(200).json({
-                message: 'User has been created successfully!',
+                message: 'User has been created successfully! Verify yout account on email!',
             });
         });
     });
 };
+
+export const verify = async (req, res) => {
+    const { token } = req.query;
+
+    const user = getUserByVerificationToken(token);
+
+    if (user) {
+        // Mark the user's email as verified in the database
+        markEmailAsVerified(user.email);
+        res.redirect('?verified=success');
+    } else {
+        res.redirect('?verified=failed');
+    }
+}
 
 export const signin = (req, res) => {
     const { email, password } = req.body;
 
     if (!email.length || !password.length) return res.status(409).json({ message: "Fill up all sign in inputs properly!" });
 
-    const q = "SELECT * FROM users WHERE email = ?;";
+    const q = "SELECT * FROM users WHERE email = ? AND verify = true;";
 
     db.query(q, [email], (err, data) => {
         if (err) return res.status(500).json(err);
@@ -81,3 +134,27 @@ export const signout = (req, res) => {
         sameSite: 'none'
     }).status(200).json({ message: 'Signed Out!' });
 };
+
+const getUserByVerificationToken = (token) => {
+    const q = "SELECT * FROM users WHERE email_verify=?;";
+
+    db.query(q, token, (err, data) => {
+        if (data) {
+            // User with the verification token found
+            return data;
+        } else {
+            // User not found, return null or an error
+            return null;
+        };
+    });
+};
+
+const markEmailAsVerified = (username) => {
+    const q = `UPDATE users SET verify=true WHERE username=?;`;
+
+    db.query(q, username, (err, data) => {
+        if (err) return res.status(500).json({ verify: failed });
+
+        return res.status(200).json({ verified: success })
+    })
+}
