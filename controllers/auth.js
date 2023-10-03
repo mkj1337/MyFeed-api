@@ -133,9 +133,9 @@ const markEmailAsVerified = (username) => {
     return new Promise((resolve, reject) => {
         db.query(q, username, (err, data) => {
             if (data) {
-                resolve({ verify: failed })
+                resolve({ verify: 'failed' })
             } else {
-                reject({ verified: success })
+                reject({ verified: 'success' })
             }
         })
     })
