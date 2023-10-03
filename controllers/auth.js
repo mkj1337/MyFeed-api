@@ -75,13 +75,17 @@ export const signup = (req, res) => {
 export const verify = async (req, res) => {
     const { token } = req.query;
 
+    console.log('from backend verify')
+
     const user = await getUserByVerificationToken(token);
 
     if (user) {
         // Mark the user's email as verified in the database
+        console.log('user exist')
         markEmailAsVerified(user.email);
         res.redirect('?verified=success');
     } else {
+        console.log('user do not exist')
         res.redirect('?verified=failed');
     }
 }
