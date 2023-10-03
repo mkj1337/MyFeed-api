@@ -72,12 +72,12 @@ export const signup = (req, res) => {
     });
 };
 
-export const verify = async (req, res) => {
+export const verify = (req, res) => {
     const { token } = req.query;
 
     console.log('from backend verify')
 
-    const user = await getUserByVerificationToken(token);
+    const user = getUserByVerificationToken(token);
 
     if (user) {
         // Mark the user's email as verified in the database
@@ -125,17 +125,17 @@ export const signout = (req, res) => {
 
 const getUserByVerificationToken = (token) => {
     const q = "SELECT * FROM users WHERE email_verify=?;";
-    return new Promise((resolve, reject) => {
-        db.query(q, token, (err, data) => {
-            if (data) {
-                // User with the verification token found
-                resolve(data)
-            } else {
-                // User not found, return null or an error
-                reject(null)
-            };
-        });
-    })
+
+    db.query(q, token, (err, data) => {
+        if (data) {
+            // User with the verification token found
+            return data;
+        } else {
+            // User not found, return null or an error
+            return null;
+        };
+    });
+
 
 };
 
