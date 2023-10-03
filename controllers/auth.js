@@ -36,14 +36,6 @@ export const signup = (req, res) => {
 
         const verificationToken = generateVerificationToken();
 
-        const transporter = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-                user: process.env.VERIFY_EMAIL,
-                pass: process.env.VERIFY_EMAIL_PASSWORD
-            }
-        })
-
         const mailOptions = {
             from: process.env.VERIFY_EMAIL,
             to: email,
@@ -152,6 +144,14 @@ const markEmailAsVerified = (username) => {
 }
 
 const sendEmail = (options) => {
+    const transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: process.env.VERIFY_EMAIL,
+            pass: process.env.VERIFY_EMAIL_PASSWORD
+        }
+    })
+
     return new Promise((resolve, reject) => {
         transporter.sendMail(options, (error, info) => {
             if (error) {
