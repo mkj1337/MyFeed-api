@@ -56,7 +56,7 @@ export const signup = (req, res) => {
             email,
             hashedPass,
             verificationToken,
-            false,
+            0,
             dayjs(Date.now()).format("YYYY-MM-DD HH:mm:ss"),
         ];
 
@@ -75,14 +75,11 @@ export const signup = (req, res) => {
 export const verify = (req, res) => {
     const { token } = req.query;
 
-    console.log(token)
-
     const q = "SELECT * FROM users WHERE email_verify=?;";
 
     db.query(q, [token], async (err, user) => {
         if (user) {
             const verified = markEmailAsVerified(user.email);
-            console.log(verified)
             res.redirect('/signin?verified=success');
         } else {
             console.log('user do not exist')
@@ -96,7 +93,7 @@ export const signin = (req, res) => {
 
     if (!email.length || !password.length) return res.status(409).json({ message: "Fill up all sign in inputs properly!" });
 
-    const q = "SELECT * FROM users WHERE email = ? AND verify = true;";
+    const q = "SELECT * FROM users WHERE email = ? AND verify = 1;";
 
     db.query(q, [email], (err, data) => {
         if (err) return res.status(500).json(err);
@@ -126,7 +123,7 @@ export const signout = (req, res) => {
 
 
 const markEmailAsVerified = (username) => {
-    const q = `UPDATE users SET verify=true WHERE username=?;`;
+    const q = `UPDATE users SET verify=1 WHERE username=?;`;
 
     db.query(q, username, (err, data) => {
         if (err) return err;
