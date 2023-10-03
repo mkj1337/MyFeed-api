@@ -63,7 +63,7 @@ export const signup = (req, res) => {
         db.query(q, [values], async (err, data) => {
             if (err) return res.status(500).json(err);
 
-            await sendEmail(mailOptions);
+            sendEmail(mailOptions);
 
             return res.status(200).json({
                 message: 'User has been created successfully! Verify yout account on email!',
@@ -75,7 +75,7 @@ export const signup = (req, res) => {
 export const verify = async (req, res) => {
     const { token } = req.query;
 
-    const user = getUserByVerificationToken(token);
+    const user = await getUserByVerificationToken(token);
 
     if (user) {
         // Mark the user's email as verified in the database
@@ -121,16 +121,18 @@ export const signout = (req, res) => {
 
 const getUserByVerificationToken = (token) => {
     const q = "SELECT * FROM users WHERE email_verify=?;";
+    return new Promise((resolve, reject) => {
+        db.query(q, token, (err, data) => {
+            if (data) {
+                // User with the verification token found
+                resolve(data)
+            } else {
+                // User not found, return null or an error
+                reject(null)
+            };
+        });
+    })
 
-    db.query(q, token, (err, data) => {
-        if (data) {
-            // User with the verification token found
-            return data;
-        } else {
-            // User not found, return null or an error
-            return null;
-        };
-    });
 };
 
 const markEmailAsVerified = (username) => {
@@ -152,13 +154,10 @@ const sendEmail = (options) => {
         }
     })
 
-    return new Promise((resolve, reject) => {
-        transporter.sendMail(options, (error, info) => {
-            if (error) {
-                reject(error)
-            } else {
-                resolve(info)
-            }
-        })
+
+    transporter.sendMail(options, (error, info) => {
+        if (error) console.log(error);
+        if (info) console.log(info)
     })
+
 }
