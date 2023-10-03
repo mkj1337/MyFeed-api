@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import { rejects } from 'assert';
 
 export const signup = (req, res) => {
     const { email, name, username, password } = req.body;
@@ -79,11 +80,12 @@ export const verify = (req, res) => {
 
     const q = "SELECT * FROM users WHERE email_verify=?;";
 
-    db.query(q, [token], (err, user) => {
+    db.query(q, [token], async (err, user) => {
         if (user) {
             console.log(user)
-            markEmailAsVerified(user.email);
+            const answear = await markEmailAsVerified(user.email);
             res.redirect('/signin?verified=success');
+            res.status(200).json(answear);
         } else {
             console.log('user do not exist')
             res.redirect('/signin?verified=failed');
@@ -128,10 +130,14 @@ export const signout = (req, res) => {
 const markEmailAsVerified = (username) => {
     const q = `UPDATE users SET verify=true WHERE username=?;`;
 
-    db.query(q, username, (err, data) => {
-        if (err) return res.status(500).json({ verify: failed });
-
-        return res.status(200).json({ verified: success })
+    return new Promise((resolve, reject) => {
+        db.query(q, username, (err, data) => {
+            if (data) {
+                resolve({ verify: failed })
+            } else {
+                reject({ verified: success })
+            }
+        })
     })
 }
 
