@@ -42,7 +42,7 @@ export const signup = (req, res) => {
             subject: 'MyFeed verify your account!',
             html: ` 
             <p>Click the following link to verify your email:</p>
-            <a href="https://devdomain.site/auth/verify?token=${verificationToken}">Verify Email</a>
+            <a href="https://devdomain.site/api/auth/verify?token=${verificationToken}">Verify Email</a>
             `
         }
 
