@@ -6,6 +6,6 @@ const router = express.Router();
 router.post('/signup', signup);
 router.post('/signin', signin);
 router.post('/signout', signout);
-router.post('/verify', verify);
+router.get('/verify', verify);
 
 export default router;
