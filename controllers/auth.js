@@ -80,7 +80,9 @@ export const verify = (req, res) => {
     db.query(q, [token], async (err, user) => {
         if (user) {
             try {
-                await markEmailAsVerified(user.username);
+                const answear = await markEmailAsVerified(user.username);
+                console.log(answear)
+
                 res.redirect('/signin?verified=success');
 
             } catch (error) {
