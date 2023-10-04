@@ -96,7 +96,6 @@ export const verify = (req, res) => {
                 res.redirect('/signin?verified=failed');
             }
         } else {
-            console.log('User does not exist');
             res.redirect('/signin?verified=failed');
         }
     });
@@ -109,13 +108,17 @@ export const signin = (req, res) => {
 
     const q = "SELECT * FROM users WHERE email = ? AND verify = 1;";
 
-    db.query(q, [email], (err, data) => {
+    db.query(q, [email], async (err, data) => {
         if (err) return res.status(500).json(err);
         if (data.length === 0) return res.status(404).json({ message: 'User not found!' });
 
         const comparePass = bcrypt.compareSync(req.body.password, data[0].password);
 
         if (!comparePass) return res.status(400).json({ message: 'Wrong password or email!' });
+
+        const verified = await checkIfUserIsVerified(email);
+
+        if (verified.length === 0) return res.status(409).json({ message: 'Verify your account on email!' });
 
         const token = jwt.sign({ id: data[0].id, username: data[0].username }, process.env.JWT_SECRET_KEY);
 
@@ -135,6 +138,20 @@ export const signout = (req, res) => {
     }).status(200).json({ message: 'Signed Out!' });
 };
 
+const checkIfUserIsVerified = (email) => {
+    const q = "SELECT * FROM users WHERE email=? AND verify=1;";
+
+    return new Promise((resolve, reject) => {
+        db.query(q, [email], (err, result) => {
+            if (err) {
+                reject({ message: err });
+            } else {
+                resolve(result);
+            }
+        });
+    })
+}
+
 const markEmailAsVerified = (username) => {
     const q = "UPDATE users SET verify=1 WHERE username=?;";
 
@@ -144,7 +161,7 @@ const markEmailAsVerified = (username) => {
                 console.error(err);
                 reject({ verified: 'failed' });
             } else {
-                resolve({ verified: 'success', data: data });
+                resolve({ verified: 'success' });
             }
         });
     });
