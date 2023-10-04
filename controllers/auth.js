@@ -106,7 +106,7 @@ export const signin = (req, res) => {
 
     if (!email.length || !password.length) return res.status(409).json({ message: "Fill up all sign in inputs properly!" });
 
-    const q = "SELECT * FROM users WHERE email = ? AND verify = 1;";
+    const q = "SELECT * FROM users WHERE email = ?;";
 
     db.query(q, [email], async (err, data) => {
         if (err) return res.status(500).json(err);
