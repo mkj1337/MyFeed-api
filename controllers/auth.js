@@ -77,24 +77,30 @@ export const verify = (req, res) => {
 
     const q = "SELECT * FROM users WHERE email_verify=?;";
 
-    db.query(q, [token], async (err, user) => {
-        if (user) {
+    db.query(q, [token], async (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.redirect('/signin?verified=failed');
+        }
+
+        if (results.length > 0) {
+            const username = results[0].username; // Assuming 'username' is the correct field
+
             try {
-                const answear = await markEmailAsVerified(user.username);
-                console.log(answear)
+                await markEmailAsVerified(username);
+                console.log('Email verified successfully');
 
                 res.redirect('/signin?verified=success');
-
             } catch (error) {
-                console.log(error)
+                console.error(error);
+                res.redirect('/signin?verified=failed');
             }
-
         } else {
-            console.log('user do not exist')
+            console.log('User does not exist');
             res.redirect('/signin?verified=failed');
-        };
+        }
     });
-}
+};
 
 export const signin = (req, res) => {
     const { email, password } = req.body;
@@ -129,22 +135,20 @@ export const signout = (req, res) => {
     }).status(200).json({ message: 'Signed Out!' });
 };
 
-
 const markEmailAsVerified = (username) => {
-    const q = `UPDATE users SET verify=1 WHERE username=?;`;
+    const q = "UPDATE users SET verify=1 WHERE username=?;";
 
     return new Promise((resolve, reject) => {
-
-        db.query(q, username, (err, data) => {
-            if (err) console.log(err);
-            if (data) {
-                resolve({ verified: 'success', data: data })
+        db.query(q, [username], (err, data) => {
+            if (err) {
+                console.error(err);
+                reject({ verified: 'failed' });
             } else {
-                reject({ verified: 'failed' })
+                resolve({ verified: 'success', data: data });
             }
-        })
-    })
-}
+        });
+    });
+};
 
 const sendEmail = (options) => {
     const transporter = nodemailer.createTransport({
