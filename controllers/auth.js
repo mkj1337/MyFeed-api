@@ -199,9 +199,11 @@ const deleteUnverifiedAccounts = (callback) => {
         const fiveMinutesAgo = new Date();
         fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
 
+        const formattedTimestamp = fiveMinutesAgo.toISOString().slice(0, 19).replace('T', ' ');
+
         const q = "DELETE FROM users WHERE verify = 0 AND createdAt <= ?;";
 
-        db.query(q, [fiveMinutesAgo], (err, data) => {
+        db.query(q, [formattedTimestamp], (err, data) => {
             if (err) {
                 console.error('Error deleting unverified accounts:', err);
                 return callback(err, null);
