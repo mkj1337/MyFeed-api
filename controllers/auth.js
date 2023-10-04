@@ -185,27 +185,33 @@ const sendEmail = (options) => {
 }
 
 cron.schedule('*/5 * * * *', async () => {
-    // Implement the logic to delete unverified accounts here
-    await deleteUnverifiedAccounts();
+    deleteUnverifiedAccounts((err, data) => {
+        if (err) {
+            console.error('Error in cron job:', err);
+        } else {
+            console.log('Cron job executed successfully:', data);
+        }
+    });
 });
 
-const deleteUnverifiedAccounts = async (req, res) => {
+const deleteUnverifiedAccounts = (callback) => {
     try {
-        // const oneHourAgo = new Date();
-        // oneHourAgo.setHours(oneHourAgo.getHours() - 1);
-
         const fiveMinutesAgo = new Date();
         fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
 
         const q = "DELETE FROM users WHERE verify = 0 AND created_at <= ?;";
 
         db.query(q, [fiveMinutesAgo], (err, data) => {
-            if (err) return res.status(500).json(err);
+            if (err) {
+                console.error('Error deleting unverified accounts:', err);
+                return callback(err, null);
+            }
 
-            if (data) return res.status(200).json({ message: "Unverified account has been deleted from db!" + data })
-        })
-
+            console.log(`Deleted ${data.affectedRows} unverified accounts`);
+            return callback(null, data);
+        });
     } catch (error) {
         console.error('Error deleting unverified accounts:', error);
+        callback(error, null);
     }
-}
+};
