@@ -118,7 +118,7 @@ export const signin = (req, res) => {
 
         const verified = await checkIfUserIsVerified(email);
 
-        if (verified.length === 0) return res.status(409).json({ message: 'Verify your account on email!' });
+        if (verified.length === 0) return res.status(409).json({ message: 'Verify your account by email!' });
 
         const token = jwt.sign({ id: data[0].id, username: data[0].username }, process.env.JWT_SECRET_KEY);
 
@@ -181,5 +181,30 @@ const sendEmail = (options) => {
         if (error) console.log(error);
         if (info) console.log(info)
     })
+}
 
+cron.schedule('*/5 * * * *', async () => {
+    // Implement the logic to delete unverified accounts here
+    await deleteUnverifiedAccounts();
+});
+
+const deleteUnverifiedAccounts = async (req, res) => {
+    try {
+        // const oneHourAgo = new Date();
+        // oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+
+        const fiveMinutesAgo = new Date();
+        fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+
+        const q = "DELETE FROM users WHERE verify = 0 AND created_at <= ?;";
+
+        db.query(q, [fiveMinutesAgo], (err, data) => {
+            if (err) return res.status(500).json(err);
+
+            if (data) return res.status(200).json({ message: "Unverified account has been deleted from db!" + data })
+        })
+
+    } catch (error) {
+        console.error('Error deleting unverified accounts:', error);
+    }
 }
