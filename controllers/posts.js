@@ -40,6 +40,38 @@ export const getPosts = async (req, res) => {
     }
 };
 
+export const getFollowingPosts = async (req, res) => {
+    const { page } = req.query;
+    let q = "SELECT posts.*, users.name, users.userImg FROM posts JOIN followers ON followers.followedUsername = posts.username JOIN users ON users.username = posts.username WHERE followers.followerUsername=?;";
+
+    if (page) {
+        const amountOfPosts = 3;
+        q += ` LIMIT ${(page - 1) * 3},${amountOfPosts}`;
+    }
+
+    try {
+        const posts = await queryDatabase(q, [req.body.sendData]);
+        const postIds = posts.map((post) => post.id);
+
+        const mediaPromises = postIds.map((postId) => {
+            const mediaQuery = `SELECT * FROM posts_media WHERE post_id = "${postId}"`;
+            return queryDatabase(mediaQuery);
+        });
+
+        const mediaData = await Promise.all(mediaPromises);
+
+        const postsWithMedia = posts.map((post, index) => ({
+            ...post,
+            media: mediaData[index],
+        }));
+
+        return res.status(200).json(postsWithMedia);
+    } catch (err) {
+        console.error('Error fetching posts:', err);
+        return res.status(500).json({ error: 'An error occurred while fetching posts.' });
+    }
+}
+
 export const getSinglePost = async (req, res) => {
     const { postId } = req.params;
     const postQuery = "SELECT posts.*, name, users.username, userImg, " +
@@ -68,22 +100,6 @@ export const getSinglePost = async (req, res) => {
         console.error('Error fetching post:', err);
         return res.status(500).json({ error: 'An error occurred while fetching the post.' });
     }
-};
-export const getFollowingPosts = (req, res) => {
-    const { page } = req.query;
-    const { sendData } = req.body;
-    let q = "SELECT posts.*, name, userImg, (SELECT COUNT(likes.postId) FROM likes GROUP BY likes.postId HAVING likes.postId = posts.id) AS likes FROM posts JOIN followers ON followers.followedUsername = posts.userId JOIN users ON users.id = posts.userId WHERE followers.followerUsername=?;";
-
-    if (page) {
-        const amountOfPosts = 3;
-        q += ` LIMIT ${(page - 1) * 3},${amountOfPosts}`;
-    }
-
-    db.query(q, [sendData], (err, data) => {
-        if (err) return res.status(500).json(err);
-
-        return res.status(200).json(data);
-    })
 };
 
 export const getUserPosts = async (req, res) => {
