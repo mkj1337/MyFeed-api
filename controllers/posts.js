@@ -42,11 +42,11 @@ export const getPosts = async (req, res) => {
 
 export const getFollowingPosts = async (req, res) => {
     const { page } = req.query;
-    let q = "SELECT posts.*, users.name, users.userImg FROM posts JOIN followers ON followers.followedUsername = posts.username JOIN users ON users.username = posts.username WHERE followers.followerUsername=?;";
+    let q = "SELECT posts.*, users.name, users.userImg FROM posts JOIN followers ON followers.followedUsername = posts.username JOIN users ON users.username = posts.username WHERE followers.followerUsername=?";
 
     if (page) {
-        const amountOfPosts = 3;
-        q += ` LIMIT ${(page - 1) * 3},${amountOfPosts}`;
+        const amountOfPosts = 4;
+        q += ` LIMIT ${(page - 1) * 4},${amountOfPosts}`;
     }
 
     try {
