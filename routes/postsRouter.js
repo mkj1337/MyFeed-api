@@ -11,7 +11,7 @@ const upload = multer({
 });
 
 router.get('/', getPosts);
-router.get('/following', getFollowingPosts);
+router.post('/following', getFollowingPosts);
 router.get('/:postId', getSinglePost);
 router.get('/user/:username', getUserPosts);
 router.post('/create', upload.array('post', 4), createPost);
