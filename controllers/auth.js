@@ -217,3 +217,26 @@ const deleteUnverifiedAccounts = (callback) => {
         callback(error, null);
     }
 };
+
+// delete account 
+export const deleteAccount = (req, res) => {
+    const token = req.cookies.access_token;
+
+    if (!token) {
+        return res.status(401).json({ message: "You are not signed in!" });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, userInfo) => {
+        if (err) {
+            return res.status(403).json({ message: "Token is not valid!" });
+        }
+
+        const q = "DELETE FROM users WHERE id = ?;";
+
+        db.query(q, [userInfo.id], (err, data) => {
+            if (err) return res.status(500).json(err);
+
+            return res.status(200).json({ message: "account has been deleted!" });
+        });
+});
+}
