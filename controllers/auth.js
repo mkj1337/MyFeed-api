@@ -20,54 +20,60 @@ export const signup = (req, res) => {
         return crypto.randomBytes(32).toString('hex');
     }
 
-    const q = "SELECT * FROM users WHERE username = ?;";
-
-    db.query(q, [username], (err, data) => {
+    const q = "SELECT * FROM users WHERE email = ?;";
+    db.query(q, [req.body.email], (err, data) => {
         if (err) return res.status(500).json(err);
-        if (data.length) return res.status(409).json({
-            message: 'User with this username already exists!',
-        });
+        if (data.length) return res.status(409).json('User with that email already exists!');
+
+        const q = "SELECT * FROM users WHERE username = ?;";
+
+        db.query(q, [username], (err, data) => {
+            if (err) return res.status(500).json(err);
+            if (data.length) return res.status(409).json({
+                message: 'User with this username already exists!',
+            });
 
 
-        const q = "INSERT INTO users(`id`, `username`, `name`, `email`, `password`, `email_verify`, `verify`, `createdAt`) VALUES(?);";
+            const q = "INSERT INTO users(`id`, `username`, `name`, `email`, `password`, `email_verify`, `verify`, `createdAt`) VALUES(?);";
 
-        if (password.length < 5) return res.status(409).json({
-            message: "Too short password!",
-        });
+            if (password.length < 5) return res.status(409).json({
+                message: "Too short password!",
+            });
 
-        const verificationToken = generateVerificationToken();
+            const verificationToken = generateVerificationToken();
 
-        const mailOptions = {
-            from: process.env.VERIFY_EMAIL,
-            to: email,
-            subject: 'MyFeed verify your account!',
-            html: ` 
+            const mailOptions = {
+                from: process.env.VERIFY_EMAIL,
+                to: email,
+                subject: 'MyFeed verify your account!',
+                html: ` 
             <p>Click the following link to verify your email:</p>
             <a href="https://devdomain.site/api/auth/verify?token=${verificationToken}">Verify Email</a>
             `
-        }
+            }
 
-        const salt = bcrypt.genSaltSync(10);
-        const hashedPass = bcrypt.hashSync(password, salt);
+            const salt = bcrypt.genSaltSync(10);
+            const hashedPass = bcrypt.hashSync(password, salt);
 
-        const values = [
-            uuidv4(),
-            username,
-            name,
-            email,
-            hashedPass,
-            verificationToken,
-            0,
-            dayjs(Date.now()).format("YYYY-MM-DD HH:mm:ss"),
-        ];
+            const values = [
+                uuidv4(),
+                username,
+                name,
+                email,
+                hashedPass,
+                verificationToken,
+                0,
+                dayjs(Date.now()).format("YYYY-MM-DD HH:mm:ss"),
+            ];
 
-        db.query(q, [values], async (err, data) => {
-            if (err) return res.status(500).json(err);
+            db.query(q, [values], async (err, data) => {
+                if (err) return res.status(500).json(err);
 
-            sendEmail(mailOptions);
+                sendEmail(mailOptions);
 
-            return res.status(200).json({
-                message: 'User has been created successfully! Verify yout account on email!',
+                return res.status(200).json({
+                    message: 'User has been created successfully! Verify yout account on email!',
+                });
             });
         });
     });
@@ -238,5 +244,5 @@ export const deleteAccount = (req, res) => {
 
             return res.status(200).json({ message: "account has been deleted!" });
         });
-});
+    });
 }
