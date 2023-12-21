@@ -11,7 +11,6 @@ import cloud from './cloud.js';
 // Routers
 import authRouter from './routes/authRouter.js';
 import postRouter from './routes/postsRouter.js';
-import commentsRouter from './routes/commentsRouter.js';
 import usersRouter from './routes/usersRouter.js';
 import likesRouter from './routes/likesRouter.js';
 import followsRouter from './routes/followsRouter.js';
@@ -50,7 +49,6 @@ app.use(express.json());
 // Routers
 app.use('/api/auth', authRouter);
 app.use('/api/posts', postRouter);
-app.use('/api/comments', commentsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/likes', likesRouter);
 app.use('/api/follows', followsRouter);
