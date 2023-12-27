@@ -347,7 +347,7 @@ export const addComment = (req, res) => {
 }
 
 export const getComments = (req, res) => {
-    let q = "SELECT comments.*, users.userImg, users.name FROM comments LEFT JOIN posts ON posts.id = comments.postId LEFT JOIN users ON users.id = comments.userId WHERE comments.postId = ? ORDER BY createdAt DESC";
+    let q = "SELECT comments.*, users.userImg, users.name, users.username FROM comments LEFT JOIN posts ON posts.id = comments.postId LEFT JOIN users ON users.id = comments.userId WHERE comments.postId = ? ORDER BY createdAt DESC";
 
     db.query(q, [req.params.postId], (err, data) => {
         if (err) return res.status(500).json(err);
