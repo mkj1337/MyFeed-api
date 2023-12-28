@@ -167,11 +167,12 @@ export const createPost = async (req, res) => {
             return res.status(200).json({
                 status: 'success',
                 message: 'Post has been uploaded!',
+                postId: postId,
             });
         } catch (error) {
             console.error('Error creating post:', error);
             return res.status(500).json({ error: 'An error occurred while creating the post.' });
-        }
+        
     });
 };
 
