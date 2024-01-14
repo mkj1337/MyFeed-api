@@ -260,22 +260,25 @@ export const deletePost = (req, res) => {
         const { post_media } = req.body;
         const { postId } = req.params;
 
-        try {
-            if (post_media.length) {
-                for (let i = 0; i < post_media.length; i++) {
-                    if (post_media[i].post_img !== null) {
-                        await cloudinary.uploader.destroy(post_media[i].post_img);
-                    }
+        const deleteMediaFromCloud = async () => {
+            try {
+                if (post_media.length) {
+                    for (let i = 0; i < post_media.length; i++) {
+                        if (post_media[i].post_img !== null) {
+                            await cloudinary.uploader.destroy(post_media[i].post_img);
+                        }
 
-                    if (post_media[i].post_video !== null) {
-                        await cloudinary.uploader.destroy(post_media[i].post_video);
+                        if (post_media[i].post_video !== null) {
+                            await cloudinary.uploader.destroy(post_media[i].post_video);
+                        }
                     }
                 }
+            } catch (err) {
+                console.log(err)
             }
-        } catch (err) {
-            console.log(err)
-        }
+        };
 
+        deleteMediaFromCloud();
 
         const q = "DELETE FROM posts WHERE id=?;";
 
