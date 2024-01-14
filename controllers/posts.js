@@ -257,12 +257,14 @@ export const deletePost = (req, res) => {
     jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, userInfo) => {
         if (err) return res.status(403).json({ message: "Token is not valid!" });
 
-        const { public_id } = req.body;
+        const { post_media } = req.body;
         const { postId } = req.params;
 
-        if (public_id) {
-            await cloudinary.uploader.destroy(public_id);
-        };
+        console.log(post_media)
+
+        // if (public_id) {
+        //     await cloudinary.uploader.destroy(public_id);
+        // };
 
         const q = "DELETE FROM posts WHERE id=?;";
 
