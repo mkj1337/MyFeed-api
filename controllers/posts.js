@@ -419,7 +419,7 @@ const handleMediaUpload = async (files, postId) => {
 
         if (file.mimetype.split('/')[0] === 'video') {
             const cloudinaryResponse = await cloudinary.uploader.upload_stream(
-                { resource_type: 'video' },
+                { resource_type: 'video', folder: 'videos' },
                 async (error, result) => {
                     if (error) {
                         console.error('Error uploading video:', error);
