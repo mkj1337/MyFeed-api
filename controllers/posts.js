@@ -260,11 +260,16 @@ export const deletePost = (req, res) => {
         const { post_media } = req.body;
         const { postId } = req.params;
 
-        console.log(post_media)
+        for (let i = 0; i < post_media.length; i++) {
+            if (post_media[i].post_img !== null) {
+                await cloudinary.uploader.destroy(post_media[i].post_img);
+            }
 
-        // if (public_id) {
-        //     await cloudinary.uploader.destroy(public_id);
-        // };
+            if (post_media[i].post_video !== null) {
+                await cloudinary.uploader.destroy(post_media[i].post_video);
+            }
+        }
+
 
         const q = "DELETE FROM posts WHERE id=?;";
 
