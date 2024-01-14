@@ -269,7 +269,8 @@ export const deletePost = (req, res) => {
                         }
 
                         if (post_media[i].post_video !== null) {
-                            await cloudinary.uploader.destroy(post_media[i].post_video);
+                            console.log(post_media[i].post_video);
+                            await cloudinary.uploader.destroy(post_media[i].post_video, { resource_type: 'video' });
                         }
                     }
                 }
