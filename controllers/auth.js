@@ -190,39 +190,39 @@ const sendEmail = (options) => {
     })
 }
 
-cron.schedule('*/5 * * * *', async () => {
-    deleteUnverifiedAccounts((err, data) => {
-        if (err) {
-            console.error('Error in cron job:', err);
-        } else {
-            console.log('Cron job executed successfully:', data);
-        }
-    });
-});
+// cron.schedule('*/5 * * * *', async () => {
+//     deleteUnverifiedAccounts((err, data) => {
+//         if (err) {
+//             console.error('Error in cron job:', err);
+//         } else {
+//             console.log('Cron job executed successfully:', data);
+//         }
+//     });
+// });
 
-const deleteUnverifiedAccounts = (callback) => {
-    try {
-        const fiveMinutesAgo = new Date();
-        fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+// const deleteUnverifiedAccounts = (callback) => {
+//     try {
+//         const fiveMinutesAgo = new Date();
+//         fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
 
-        const formattedTimestamp = fiveMinutesAgo.toISOString().slice(0, 19).replace('T', ' ');
+//         const formattedTimestamp = fiveMinutesAgo.toISOString().slice(0, 19).replace('T', ' ');
 
-        const q = "DELETE FROM users WHERE verify = 0 AND createdAt <= ?;";
+//         const q = "DELETE FROM users WHERE verify = 0 AND createdAt <= ?;";
 
-        db.query(q, [formattedTimestamp], (err, data) => {
-            if (err) {
-                console.error('Error deleting unverified accounts:', err);
-                return callback(err, null);
-            }
+//         db.query(q, [formattedTimestamp], (err, data) => {
+//             if (err) {
+//                 console.error('Error deleting unverified accounts:', err);
+//                 return callback(err, null);
+//             }
 
-            console.log(`Deleted ${data.affectedRows} unverified accounts`);
-            return callback(null, data);
-        });
-    } catch (error) {
-        console.error('Error deleting unverified accounts:', error);
-        callback(error, null);
-    }
-};
+//             console.log(`Deleted ${data.affectedRows} unverified accounts`);
+//             return callback(null, data);
+//         });
+//     } catch (error) {
+//         console.error('Error deleting unverified accounts:', error);
+//         callback(error, null);
+//     }
+// };
 
 // delete account 
 export const deleteAccount = (req, res) => {
