@@ -261,13 +261,15 @@ export const deletePost = (req, res) => {
         const { postId } = req.params;
 
         try {
-            for (let i = 0; i < post_media.length; i++) {
-                if (post_media[i].post_img !== null) {
-                    await cloudinary.uploader.destroy(post_media[i].post_img);
-                }
+            if (post_media.length) {
+                for (let i = 0; i < post_media.length; i++) {
+                    if (post_media[i].post_img !== null) {
+                        await cloudinary.uploader.destroy(post_media[i].post_img);
+                    }
 
-                if (post_media[i].post_video !== null) {
-                    await cloudinary.uploader.destroy(post_media[i].post_video);
+                    if (post_media[i].post_video !== null) {
+                        await cloudinary.uploader.destroy(post_media[i].post_video);
+                    }
                 }
             }
         } catch (err) {
