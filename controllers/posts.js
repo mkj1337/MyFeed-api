@@ -291,7 +291,7 @@ export const deletePost = (req, res) => {
     });
 };
 
-export const addComment = (req, res) => {
+export const addComment = async (req, res) => {
     const token = req.cookies.access_token;
 
     if (!token) return res.status(401).json("You are not Sign in!");
