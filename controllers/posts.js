@@ -21,9 +21,9 @@ export const getPosts = async (req, res) => {
         const posts = await queryDatabase(q);
         const postIds = posts.map((post) => post.id);
 
-        const mediaPromises = postIds.map((postId) => {
+        const mediaPromises = postIds.map(async (postId) => {
             const mediaQuery = `SELECT * FROM posts_media WHERE post_id = "${postId}"`;
-            return queryDatabase(mediaQuery);
+            return await queryDatabase(mediaQuery);
         });
 
         const mediaData = await Promise.all(mediaPromises);
@@ -53,9 +53,9 @@ export const getFollowingPosts = async (req, res) => {
         const posts = await queryDatabase(q, [req.body.sendData]);
         const postIds = posts.map((post) => post.id);
 
-        const mediaPromises = postIds.map((postId) => {
+        const mediaPromises = postIds.map(async (postId) => {
             const mediaQuery = `SELECT * FROM posts_media WHERE post_id = "${postId}"`;
-            return queryDatabase(mediaQuery);
+            return await queryDatabase(mediaQuery);
         });
 
         const mediaData = await Promise.all(mediaPromises);
@@ -110,9 +110,9 @@ export const getUserPosts = async (req, res) => {
         const posts = await queryDatabase(q, [username]);
         const postIds = posts.map((post) => post.id);
 
-        const mediaPromises = postIds.map((postId) => {
+        const mediaPromises = postIds.map(async (postId) => {
             const mediaQuery = `SELECT * FROM posts_media WHERE post_id = "${postId}"`;
-            return queryDatabase(mediaQuery);
+            return await queryDatabase(mediaQuery);
         });
 
         const mediaData = await Promise.all(mediaPromises);
@@ -481,7 +481,6 @@ const queryDatabase = (query, params = []) => {
                 reject(err);
             } else {
                 resolve(data);
-                db.destroy();
             }
         });
     });
