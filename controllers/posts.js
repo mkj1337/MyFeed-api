@@ -481,6 +481,7 @@ const queryDatabase = (query, params = []) => {
                 reject(err);
             } else {
                 resolve(data);
+                db.destroy();
             }
         });
     });
