@@ -4,6 +4,8 @@ import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import { v2 as cloudinary } from 'cloudinary';
 import { bufferToDataURI } from '../utlis.js';
+import async from 'async';
+
 
 
 export const getPosts = async (req, res) => {
