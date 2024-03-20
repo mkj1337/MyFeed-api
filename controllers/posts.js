@@ -384,16 +384,19 @@ export const getComment = (req, res) => {
     })
 }
 
-const deleteCommentsRecursive = (commentId, callback) => {
-  
+// Function to recursively delete comments
+const deleteCommentsRecursive =  (commentId, callback) => {
+    // Delete the comment
     let q = "DELETE FROM comments WHERE id = ?";
-    db.query(q, [commentId], (err, data) => {
+     db.query(q, [commentId], (err, data) => {
         if (err) return callback(err);
 
+        // Find child comments of this comment
         q = "SELECT id FROM comments WHERE parentId = ?";
         db.query(q, [commentId], (err, rows) => {
             if (err) return callback(err);
 
+            // If there are child comments, recursively delete them
             async.each(rows, (row, next) => {
                 deleteCommentsRecursive(row.id, next);
             }, callback);
@@ -404,13 +407,15 @@ const deleteCommentsRecursive = (commentId, callback) => {
 export const deleteComment = (req, res) => {
     const { commentId } = req.body;
 
+    // Recursively delete comments
     deleteCommentsRecursive(commentId, (err, data) => {
-        if (err) return res.status(500).json(err);
-
-        return res.status(200).json(data);
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "An internal server error occurred." });
+        }
+        return res.status(200).json({ message: "Comments deleted successfully." });
     });
 };
-
 
 
 // Helper function to insert a post into the database
