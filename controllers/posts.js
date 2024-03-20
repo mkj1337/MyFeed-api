@@ -384,16 +384,34 @@ export const getComment = (req, res) => {
     })
 }
 
+const deleteCommentsRecursive = (commentId, callback) => {
+  
+    let q = "DELETE FROM comments WHERE id = ?";
+    db.query(q, [commentId], (err, data) => {
+        if (err) return callback(err);
+
+        q = "SELECT id FROM comments WHERE parentId = ?";
+        db.query(q, [commentId], (err, rows) => {
+            if (err) return callback(err);
+
+            async.each(rows, (row, next) => {
+                deleteCommentsRecursive(row.id, next);
+            }, callback);
+        });
+    });
+};
+
 export const deleteComment = (req, res) => {
     const { commentId } = req.body;
-    let q = "DELETE FROM comments WHERE comments.id = ?";
 
-    db.query(q, [commentId], (err, data) => {
+    deleteCommentsRecursive(commentId, (err, data) => {
         if (err) return res.status(500).json(err);
 
         return res.status(200).json(data);
-    })
-}
+    });
+};
+
+
 
 // Helper function to insert a post into the database
 const insertPost = async (postId, text, createdAt, username) => {
